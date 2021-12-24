@@ -1,4 +1,4 @@
-package com.segment.analytics.android.integrations.appsflyer;
+package io.freshpaint.android.integrations.appsflyer;
 
 
 import android.app.Activity;
@@ -17,33 +17,33 @@ import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 import com.appsflyer.deeplink.DeepLinkListener;
 import com.appsflyer.deeplink.DeepLinkResult;
-import com.segment.analytics.Analytics;
-import com.segment.analytics.Properties;
-import com.segment.analytics.ValueMap;
-import com.segment.analytics.integrations.IdentifyPayload;
-import com.segment.analytics.integrations.Integration;
-import com.segment.analytics.integrations.Logger;
-import com.segment.analytics.integrations.TrackPayload;
+import com.freshpaint.freshpaint.Freshpaint;
+import com.freshpaint.freshpaint.Properties;
+import com.freshpaint.freshpaint.ValueMap;
+import com.freshpaint.freshpaint.integrations.IdentifyPayload;
+import com.freshpaint.freshpaint.integrations.Integration;
+import com.freshpaint.freshpaint.integrations.Logger;
+import com.freshpaint.freshpaint.integrations.TrackPayload;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static com.segment.analytics.internal.Utils.transform;
+import static com.freshpaint.freshpaint.internal.Utils.transform;
 
 /**
  * Created by shacharaharon on 12/04/2016.
  */
 public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
 
-    static final String AF_SEGMENT_SHARED_PREF = "appsflyer-segment-data";
+    static final String AF_FRESHPAINT_SHARED_PREF = "appsflyer-freshpaint-data";
     static final String CONV_KEY = "AF_onConversion_Data";
 
     static final Map<String, String> MAPPER;
 
     private static final String APPSFLYER_KEY = "AppsFlyer";
-    private static final String SEGMENT_REVENUE = "revenue";
-    private static final String SEGMENT_CURRENCY = "currency";
+    private static final String FRESHPAINT_REVENUE = "revenue";
+    private static final String FRESHPAINT_CURRENCY = "currency";
     public static ExternalAppsFlyerConversionListener conversionListener;
     public static ExternalDeepLinkListener deepLinkListener;
 
@@ -52,8 +52,8 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
      */
     static {
         Map<String, String> mapper = new LinkedHashMap<>();
-        mapper.put(SEGMENT_REVENUE, AFInAppEventParameterName.REVENUE);
-        mapper.put(SEGMENT_CURRENCY, AFInAppEventParameterName.CURRENCY);
+        mapper.put(FRESHPAINT_REVENUE, AFInAppEventParameterName.REVENUE);
+        mapper.put(FRESHPAINT_CURRENCY, AFInAppEventParameterName.CURRENCY);
         MAPPER = Collections.unmodifiableMap(mapper);
     }
 
@@ -68,20 +68,20 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
     public static ConversionListenerDisplay cld;
     public static final Factory FACTORY = new Integration.Factory() {
         @Override
-        public Integration<AppsFlyerLib> create(ValueMap settings, Analytics analytics) {
-            Logger logger = analytics.logger(APPSFLYER_KEY);
+        public Integration<AppsFlyerLib> create(ValueMap settings, Freshpaint freshpaint) {
+            Logger logger = freshpaint.logger(APPSFLYER_KEY);
             AppsFlyerLib afLib = AppsFlyerLib.getInstance();
 
             String devKey = settings.getString("appsFlyerDevKey");
             boolean trackAttributionData = settings.getBoolean("trackAttributionData", false);
-            Application application = analytics.getApplication();
+            Application application = freshpaint.getApplication();
 
 
             AppsFlyerConversionListener listener = null;
             if (trackAttributionData) {
-                listener = new ConversionListener(analytics);
+                listener = new ConversionListener(freshpaint);
             }
-            afLib.setDebugLog(logger.logLevel != Analytics.LogLevel.NONE);
+            afLib.setDebugLog(logger.logLevel != Freshpaint.LogLevel.NONE);
             afLib.init(devKey, listener, application.getApplicationContext());
             if (deepLinkListener != null)
                 AppsFlyerLib.getInstance().subscribeForDeepLink( deepLinkListener);
@@ -90,17 +90,17 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
 
             // RD-34040
             boolean isReact = true;
-            // Check if Segment React Native integration with AppsFLyer is used
+            // Check if Freshpaint React Native integration with AppsFLyer is used
             try {
-                Class.forName("com.segment.analytics.reactnative.integration.appsflyer.RNAnalyticsIntegration_AppsFlyerModule");
+                Class.forName("com.freshpaint.freshpaint.reactnative.integration.appsflyer.RNFreshpaintIntegration_AppsFlyerModule");
             } catch (ClassNotFoundException e) {
-                // Segment React Native integration with AppsFLyer is NOT used
+                // Freshpaint React Native integration with AppsFLyer is NOT used
                 isReact = false;
             }
-            // Segment React Native integration with AppsFLyer is used, we need to send first launch manually
+            // Freshpaint React Native integration with AppsFLyer is used, we need to send first launch manually
             if(isReact){
                 afLib.start(application, devKey);
-                logger.verbose("Segment React Native AppsFlye rintegration is used, sending first launch manually");
+                logger.verbose("Freshpaint React Native AppsFlye rintegration is used, sending first launch manually");
             }
 
             return new AppsflyerIntegration(application, logger, afLib, devKey);
@@ -118,7 +118,7 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
         this.logger = logger;
         this.appsflyer = afLib;
         this.appsFlyerDevKey = devKey;
-        this.isDebug = (logger.logLevel != Analytics.LogLevel.NONE);
+        this.isDebug = (logger.logLevel != Freshpaint.LogLevel.NONE);
     }
 
     @Override
@@ -179,10 +179,10 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
     public interface ExternalDeepLinkListener extends DeepLinkListener {}
 
     static class ConversionListener implements AppsFlyerConversionListener {
-        final Analytics analytics;
+        final Freshpaint freshpaint;
 
-        public ConversionListener(Analytics analytics) {
-            this.analytics = analytics;
+        public ConversionListener(Freshpaint freshpaint) {
+            this.freshpaint = freshpaint;
         }
 
         @Override
@@ -256,8 +256,8 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
 
             // If you are working with networks that don't allow passing user level data to 3rd parties,
             // you will need to apply code to filter out these networks before calling
-            // `analytics.track("Install Attributed", properties);`
-            analytics.track("Install Attributed", properties);
+            // `freshpaint.track("Install Attributed", properties);`
+            freshpaint.track("Install Attributed", properties);
         }
 
         private boolean getFlag(final String key) {
@@ -268,7 +268,7 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
                 return false;
             }
 
-            SharedPreferences sharedPreferences = context.getSharedPreferences(AF_SEGMENT_SHARED_PREF, 0);
+            SharedPreferences sharedPreferences = context.getSharedPreferences(AF_FRESHPAINT_SHARED_PREF, 0);
             return sharedPreferences.getBoolean(key, false);
         }
 
@@ -280,7 +280,7 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
                 return;
             }
 
-            SharedPreferences sharedPreferences = context.getSharedPreferences(AF_SEGMENT_SHARED_PREF, 0);
+            SharedPreferences sharedPreferences = context.getSharedPreferences(AF_FRESHPAINT_SHARED_PREF, 0);
             android.content.SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean(key, value);
             editorCommit(editor);
@@ -295,7 +295,7 @@ public class AppsflyerIntegration extends Integration<AppsFlyerLib> {
         }
 
         private Context getContext() {
-            return this.analytics.getApplication().getApplicationContext();
+            return this.freshpaint.getApplication().getApplicationContext();
         }
 
     }
