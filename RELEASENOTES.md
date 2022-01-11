@@ -1,5 +1,10 @@
 # Release Notes
 
+### 0.1.0
+* Forked Segment integration repository and modified for Freshpaint's Android SDK.
+
+## Release Notes from https://github.com/AppsFlyerSDK/appsflyer-segment-android-plugin
+
 ### 6.4.3
 * Update Android SDK to v6.4.3
 
@@ -39,7 +44,7 @@
 
 ### 5.1.0
 * Updated Android SDK to v5.1.0
-* Updated structure of campaign :     
+* Updated structure of campaign :
     @"campaign" : @{
             @"ad_group" : @"",
             @"name" : @"",

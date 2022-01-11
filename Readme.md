@@ -1,9 +1,7 @@
 <img src="https://www.appsflyer.com/wp-content/uploads/2016/11/logo-1.svg"  width="200">
 
 
-# AppsFlyer - Segment Integration
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.appsflyer/segment-android-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.appsflyer/segment-android-integration)
+# AppsFlyer - Freshpaint Integration
 
 ----------
 In order for us to provide optimal support, we would kindly ask you to submit any issues to support@appsflyer.com
@@ -25,62 +23,32 @@ Built with AppsFlyer Android SDK `v6.4.3`
 
 ## Table of content
 
-- [What Is Segment](#whatIsSegment)
 - [Quick Start](#quickStart)
-- [API Methods](#api-methods)
 -  [SDK Initialization](#sdk_init)
 -  [Tracking In-App Events](#adding_events)
 -  [Get Conversion Data](#conversion_data)
 - [Unified Deep Linking](#deep_linking)
-- [Sample App](#sample_app)
 
 
-### <a id="whatIsSegment">
+### <a id="whatIsFreshpaint">
 # Introduction
 
-Segment makes it easy to send your data to AppsFlyer. Once you have tracked your data through Segment's open source libraries, the data is translated and routed to AppsFlyer in the appropriate format. AppsFlyer helps marketers to pinpoint targeting, optimize ad spend and boost ROI.
-
-
-The AppsFlyer integration code is open-source on GitHub if you want to [check it out](https://github.com/segment-integrations/integration-appsflyer).
-
-Check out the Segment AppsFlyer docs [here](https://segment.com/docs/destinations/appsflyer/).
-
-
-
-
-
-
-### <a id="gettingStarted">
-# Getting Started
-
-
-#### DashBoard Setup
-
-To enable AppsFlyer in the Segment dashboard, follow these steps:
-
-1.  Enter your unique AppsFlyer Dev Key, which is accessible from your AppsFlyer account, in Segment’s destination settings.
-2.  After you build and release to the app store, your data is translated and sent to AppsFlyer automatically.
-
-
-
-The Segment AppsFlyer integration is entirely handled through Segment's servers, so you don’t need to bundle AppsFlyer's iOS or Android SDKs. Your Segment SDK will be enough.
-
-AppsFlyer supports the `identify` and `track` methods.
+Freshpaint makes it easy to send your data to AppsFlyer. Once you have tracked your data through Freshpaint's open source libraries, the data is translated and routed to AppsFlyer in the appropriate format. AppsFlyer helps marketers to pinpoint targeting, optimize ad spend and boost ROI.
 
 
 ### <a id="quickStart">
 
 # Setting up the SDK
 
-#### 2.1) Adding the Plugin to your Project
+#### Adding the Plugin to your Project
 
-Add the AppsFlyer Segment Integration dependency to your app `build.gradle` file.
+Add the AppsFlyer Freshpaint Integration dependency to your app `build.gradle` file.
 ```java
-compile 'com.appsflyer:segment-android-integration:6.4.3'
+compile 'io.freshpaint.android.integrations:appsflyer:0.1.0'
 compile 'com.android.installreferrer:installreferrer:2.1'
 ```
 
-#### 2.2)  Setting the Required Permissions
+#### Setting the Required Permissions
 
 The AndroidManifest.xml should include the following permissions:
 
@@ -90,30 +58,40 @@ The AndroidManifest.xml should include the following permissions:
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 ```
 
-### <a id="sdk_init"> 2.2)  Init AppsFlyer
+### <a id="sdk_init"> Init AppsFlyer
 
 ```java
 
-static final String SEGMENT_WRITE_KEY = "<YOUR_KEY>";
+static final String FRESHPAINT_WRITE_KEY = "<YOUR_KEY>";
 
 @Override
 protected void onCreate(Bundle savedInstanceState) {
 super.onCreate(savedInstanceState);
 setContentView(R.layout.activity_main);
 
-Analytics.Builder builder = new Analytics.Builder(this , SEGMENT_WRITE_KEY)
+Freshpaint.Builder builder = new Freshpaint.Builder(this , FRESHPAINT_WRITE_KEY)
 .use(AppsflyerIntegration.FACTORY)
+.defaultProjectSettings(
+    new ValueMap()
+        .putValue(
+            "integrations",
+            new ValueMap()
+                .putValue(
+                    "AppsFlyer",
+                    new ValueMap()
+                        .putValue("appsFlyerDevKey", "<your dev key>")
+                        .putValue("trackAttributionData", true))))
 
 ...
 (optional)
 
-.logLevel(Analytics.LogLevel.VERBOSE)
+.logLevel(Freshpaint.LogLevel.VERBOSE)
 .recordScreenViews()
 .trackAttributionInformation() // Install Attributed event
 .trackApplicationLifecycleEvents() // Application Opened , Application Updated , Application Installed events
 .build();
 
-Analytics.setSingletonInstance(builder.build());
+Freshpaint.setSingletonInstance(builder.build());
 
 }
 ```
@@ -126,11 +104,11 @@ Adding `.trackApplicationLifecycleEvents()` will send   `Application Opened`  , 
 
 ## <a id="adding_events"> Track
 
-When you call `track`, Segment translates it automatically and sends the event to AppsFlyer.
+When you call `track`, Freshpaint translates it automatically and sends the event to AppsFlyer.
 
-Segment includes all the event properties as callback parameters on the AppsFlyer event, and automatically translates `properties.revenue` to the appropriate AppsFlyer purchase event properties based on Segment's spec’d properties.
+Freshpaint includes all the event properties as callback parameters on the AppsFlyer event, and automatically translates `properties.revenue` to the appropriate AppsFlyer purchase event properties based on Freshpaint's spec’d properties.
 
-Finally, Segment automatically uses AppsFlyer’s transactionId-based de-duplication when sending an an `orderId`.
+Finally, Freshpaint automatically uses AppsFlyer’s transactionId-based de-duplication when sending an an `orderId`.
 
 
 Purchase Event Example:
@@ -140,16 +118,16 @@ eventValue.put("productId","com.test.id");
 eventValue.put("revenue","1.00");
 eventValue.put("currency","USD");
 
-Analytics analytics = Analytics.with(this);
+Freshpaint freshpaint = Freshpaint.with(this);
 Properties properties = new Properties();
 properties.putAll(eventValue);
 
-analytics.track("purchase", properties);
+freshpaint.track("purchase", properties);
 ```
 
 Note: AppsFlyer will map `revenue -> af_revenue` and `currency -> af_currency`.
 
-Check out the Segment docs on track [here](https://segment.com/docs/spec/track/).
+Check out the Freshpaint docs on track [here](https://documentation.freshpaint.io/developer-docs/freshpaint-android-sdk-reference#track).
 
 
 ### <a id="identify">
@@ -157,7 +135,7 @@ Check out the Segment docs on track [here](https://segment.com/docs/spec/track/)
 ## Identify
 
 
-When you `identify` a user, that user’s information is passed to AppsFlyer with `customer user Id` as AppsFlyer’s External User ID. Segment’s special traits recognized as AppsFlyer’s standard user profile fields (in parentheses) are:
+When you `identify` a user, that user’s information is passed to AppsFlyer with `customer user Id` as AppsFlyer’s External User ID. Freshpaint’s special traits recognized as AppsFlyer’s standard user profile fields (in parentheses) are:
 
 `customerUserId` (`Customer User Id`) <br>
 `currencyCode` (`Currency Code`)
@@ -165,15 +143,15 @@ When you `identify` a user, that user’s information is passed to AppsFlyer wit
 All other traits will be sent to AppsFlyer as custom attributes.
 
 ```java
-Analytics analytics = Analytics.with(this);
+Freshpaint freshpaint = Freshpaint.with(this);
 
-analytics.identify("a user's id", new Traits()
+freshpaint.identify("a user's id", new Traits()
 .putName("a user's name")
 .putEmail("maxim@appsflyer.com"),
 null);
 ```
 
-Check out the Segment docs on indentify [here](https://segment.com/docs/spec/identify/).
+Check out the Freshpaint docs on indentify [here](https://documentation.freshpaint.io/developer-docs/freshpaint-android-sdk-reference#identify).
 
 ### <a id="conversion_data">
 
@@ -211,7 +189,7 @@ For Conversion data your should call the method below.
                 };
 ```
 
-In order for Conversion Data to be sent to Segment, make sure you have enabled "Track Attribution Data" in AppsFlyer destination settings:
+In order for Conversion Data to be sent to Freshpaint, make sure you have enabled "Track Attribution Data" in AppsFlyer destination settings:
 
 <img width="741" alt="Xnip2019-05-11_19-19-31" src="https://user-images.githubusercontent.com/18286267/57572409-8fb19200-7422-11e9-832f-fdd343af3137.png">
 
@@ -230,7 +208,3 @@ In order to implement unified deep linking, call the method below :
 ```
 For more information about unified deep linking, check [here](https://dev.appsflyer.com/docs/android-unified-deep-linking)
 
-### <a id="sample_app">
-
-##  Sample App
-<p>AppsFlyer has created a sample Android application that integrates AppsFlyer via Segment. Check it out at the <a href="https://github.com/AppsFlyerSDK/appsflyer-segment-android-plugin/tree/master/segmenttestapp" target="_blank">Github repo</a>.</p>
